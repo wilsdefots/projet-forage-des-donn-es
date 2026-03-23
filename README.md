@@ -13,3 +13,4 @@ Dans un contexte où les menaces informatiques se multiplient et évoluent rapid
 
 **Problème2** : En présence d'autant de variables et d'autant d'observations, il y a un risque de surapprentissage.
 Donc nous allons préter une attention particulière à la colinéarité entre les différentes variables. Et via une analyse par composantes principales, on pourra selectionner les prédicteurs les plus pertinents.
+
