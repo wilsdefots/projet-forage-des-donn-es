@@ -14,3 +14,18 @@ Dans un contexte où les menaces informatiques se multiplient et évoluent rapid
 **Problème2** : En présence d'autant de variables et d'autant d'observations, il y a un risque de surapprentissage.
 Donc nous allons préter une attention particulière à la colinéarité entre les différentes variables. Et via une analyse par composantes principales, on pourra selectionner les prédicteurs les plus pertinents.
 
+## Installation et Démarrage rapide
+
+Ce projet utilise [uv](https://docs.astral.sh/uv/), un gestionnaire de paquets et d'environnements virtuels Python extrêmement rapide.
+
+### 1. Lancer le projet
+
+**Synchroniser les dépendances**
+```bash
+uv sync
+```
+
+**Installer des librairies supplémentaires**
+```bash
+uv add <nom_de_la_librairie>
+```
