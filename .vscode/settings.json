@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "/opt/anaconda3/bin/python",
+    "python.condaPath": "/opt/anaconda3/bin/conda",
+    "python.useEnvironmentsExtension": false,
+    "jupyter.kernels.filter": [],
+    "python.terminal.activateEnvironment": true
+}
