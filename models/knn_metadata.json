@@ -1,0 +1,9 @@
+{
+    "model_name": "KNN Optimis\u00e9",
+    "k_neighbors": 19,
+    "pca_components": 28,
+    "target_mapping": {
+        "Non-TruePositive": 0,
+        "TruePositive": 1
+    }
+}
