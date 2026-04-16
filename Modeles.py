@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
+import os
+import json
+import joblib
 warnings.filterwarnings('ignore')
 
 # -- Scikit-learn : modelisation --
@@ -67,8 +70,7 @@ X_test_pca  = pca.transform(X_test_transformed)
 # --- Sans PCA (toutes les features) ---
 logistic_baseline_nopca = LogisticRegression(
     max_iter=1000,
-    random_state=42,
-    multi_class='ovr'
+    random_state=42
 )
 logistic_baseline_nopca.fit(X_train_transformed, y_train)
 y_pred_bl_nopca = logistic_baseline_nopca.predict(X_test_transformed)
@@ -79,8 +81,7 @@ f1_bl_nopca  = f1_score(y_test, y_pred_bl_nopca, average='macro')
 # --- Avec PCA ---
 logistic_baseline = LogisticRegression(
     max_iter=1000,
-    random_state=42,
-    multi_class='ovr'
+    random_state=42
 )
 logistic_baseline.fit(X_train_pca, y_train)
 y_pred_baseline = logistic_baseline.predict(X_test_pca)
@@ -98,7 +99,7 @@ param_distributions = {
     'class_weight': [None, 'balanced']
 }
 
-log_reg = LogisticRegression(max_iter=1000, random_state=42, multi_class='ovr')
+log_reg = LogisticRegression(max_iter=1000, random_state=42)
 
 
 grid_search = RandomizedSearchCV (
@@ -145,10 +146,10 @@ best_regression = grid_search.best_estimator_
 y_pred_best = best_regression.predict(X_test_pca)
 
 # Metriques detaillees
-acc_best  = accuracy_score(y_test, y_pred_best)
-f1_best   = f1_score(y_test, y_pred_best, average='macro')
-prec_best = precision_score(y_test, y_pred_best, average='macro')
-rec_best  = recall_score(y_test, y_pred_best, average='macro')
+reg_acc  = accuracy_score(y_test, y_pred_best)
+reg_f1   = f1_score(y_test, y_pred_best, average='macro')
+reg_prec = precision_score(y_test, y_pred_best, average='macro')
+reg_rec  = recall_score(y_test, y_pred_best, average='macro')
 
 print("=" * 65)
 print("     EVALUATION FINALE -- RÉGRESSION OPTIMISE + PCA (sur jeu de test)")
@@ -157,10 +158,10 @@ print(f"\n  Hyperparametres optimaux :")
 for param, val in grid_search.best_params_.items():
     print(f"    {param} = {val}")
 print(f"  PCA : {X_train_pca.shape[1]} composantes ({pca.explained_variance_ratio_.sum()*100:.1f}% variance)")
-print(f"\n  Accuracy        : {acc_best:.4f}")
-print(f"  Macro Precision : {prec_best:.4f}")
-print(f"  Macro Recall    : {rec_best:.4f}")
-print(f"  Macro F1-Score  : {f1_best:.4f}")
+print(f"\n  Accuracy        : {reg_acc:.4f}")
+print(f"  Macro Precision : {reg_prec:.4f}")
+print(f"  Macro Recall    : {reg_rec:.4f}")
+print(f"  Macro F1-Score  : {reg_f1:.4f}")
 print(f"\n{'-' * 65}")
 print("\nRapport de classification detaille :")
 print(classification_report(
@@ -184,7 +185,7 @@ comparison = pd.DataFrame({
         recall_score(y_test, y_pred_baseline, average='macro'),
         f1_baseline
     ],
-    'PCA + Optimise': [acc_best, prec_best, rec_best, f1_best]
+    'PCA + Optimise': [reg_acc, reg_prec, reg_rec, reg_f1]
 })
 comparison['Gain total'] = comparison['PCA + Optimise'] - comparison['Sans PCA']
 comparison['Gain (%)'] = (comparison['Gain total'] / comparison['Sans PCA'] * 100).round(2)
@@ -415,8 +416,10 @@ rf_baseline.fit(X_train_transformed, y_train)
 y_pred_baseline = rf_baseline.predict(X_test_transformed)
 
 # Métriques baseline
-acc_baseline = accuracy_score(y_test, y_pred_baseline)
-f1_baseline  = f1_score(y_test, y_pred_baseline, average='macro')
+acc_baseline  = accuracy_score(y_test, y_pred_baseline)
+f1_baseline   = f1_score(y_test, y_pred_baseline, average='macro')
+prec_baseline = precision_score(y_test, y_pred_baseline, average='macro')
+rec_baseline  = recall_score(y_test, y_pred_baseline, average='macro')
 
 # Importance des features
 importances = rf_baseline.feature_importances_
@@ -495,8 +498,10 @@ for thresh in thresholds_feat:
 
 # Meilleur seuil
 best_feat_result = max(results_feat_sel, key=lambda x: x['f1_mean'])
+sel_idx = best_feat_result['selected_idx']
+
 print(f"\n  >> Meilleur : {best_feat_result['seuil']*100:.0f}% "
-      f"({best_feat_result['n_features']} features) "
+      f"({len(sel_idx)} features) "
       f"→ F1 = {best_feat_result['f1_mean']:.4f}")
 print(f"  >> Ref. sans selection (185 features) → F1 = {random_search.best_score_:.4f}")
 
@@ -534,15 +539,15 @@ print(f"  Seuil optimal    : {best_threshold:.2f} → F1 macro (CV) = {best_f1_t
 
 # ── 7. MODELE OPTIMISE : Hyperparametres + Threshold Tuning ──
 
-# Entrainer le modele optimise
+# Entrainer le modele optimise sur les features selectionnees uniquement
 rf_optimized = RandomForestClassifier(
     **random_search.best_params_,
     random_state=2026, n_jobs=-1
 )
-rf_optimized.fit(X_train_transformed, y_train)
+rf_optimized.fit(X_train_transformed[:, sel_idx], y_train)
 
-# Predire avec le seuil optimise
-y_proba_test = rf_optimized.predict_proba(X_test_transformed)
+# Predire avec le seuil optimise sur les features selectionnees
+y_proba_test = rf_optimized.predict_proba(X_test_transformed[:, sel_idx])
 y_pred_optimized = (y_proba_test[:, 1] >= best_threshold).astype(int)
 
 # Metriques
@@ -610,4 +615,77 @@ print("=" * 70)
 
 print(f"\nRapport de classification :")
 print(classification_report(y_test, y_pred_best, target_names=TARGET_NAMES))
+
 # %%
+# ── EXPORT DES MODELES VERS models/ ──
+os.makedirs('models', exist_ok=True)
+
+# --- REGRESSION LOGISTIQUE : meilleur modele + metadata ---
+joblib.dump(best_regression, 'models/best_regression.joblib')
+
+reg_metadata = {
+    "model_name": "Regression Logistique",
+    "pca_components": int(pca.n_components_),
+    "target_mapping": {k: int(v) for k, v in CIBLE_MAP.items()},
+    "training_metrics": {
+        "precision": float(reg_prec),
+        "recall": float(reg_rec),
+        "f1_macro": float(reg_f1)
+    }
+}
+with open('models/reg_metadata.json', 'w') as f:
+    json.dump(reg_metadata, f, indent=4)
+
+# --- KNN : meilleur modele + PCA + preprocesseur ---
+joblib.dump(best_knn, 'models/best_knn.joblib')
+
+joblib.dump(pca, 'models/pca.joblib')
+
+joblib.dump(joblib.load('preprocessor.joblib'), 'models/preprocessor.joblib')
+
+knn_metadata = {
+    "model_name": "KNN Optimise",
+    "k_neighbors": int(best_knn.n_neighbors),
+    "pca_components": int(pca.n_components_),
+    "target_mapping": {k: int(v) for k, v in CIBLE_MAP.items()},
+    "training_metrics": {
+        "precision": float(prec_best),
+        "recall": float(rec_best),
+        "f1_macro": float(f1_best)
+    }
+}
+with open('models/knn_metadata.json', 'w') as f:
+    json.dump(knn_metadata, f, indent=4)
+
+# --- Random Forest : meilleur modele + preprocesseur + metadata ---
+joblib.dump(rf_best, 'models/rf_model.joblib')
+
+joblib.dump(joblib.load('preprocessor.joblib'), 'models/rf_preprocessor.joblib')
+sel_idx = best_feat_result['selected_idx']
+
+# Métriques du meilleur modèle RF
+if best_model == "RF Optimise":
+    rf_acc, rf_prec, rf_rec, rf_f1 = acc_optimized, prec_optimized, rec_optimized, f1_optimized
+else:
+    rf_acc, rf_prec, rf_rec, rf_f1 = acc_baseline, prec_baseline, rec_baseline, f1_baseline
+
+rf_metadata = {
+    "model_name": best_model,
+    "n_features_original": X_train_transformed.shape[1],
+    "threshold": float(best_threshold),
+    "target_mapping": CIBLE_MAP,
+    "target_names": TARGET_NAMES,
+    "training_metrics": {
+        "precision": float(rf_prec),
+        "recall": float(rf_rec),
+        "f1_macro": float(rf_f1)
+    }
+}
+
+# On n'ajoute les indices de selection que si le modele optimise a ete retenu
+if best_model == "RF Optimise":
+    rf_metadata["selected_features_indices"] = sel_idx.tolist()
+    rf_metadata["n_features_selected"] = len(sel_idx)
+
+with open('models/rf_metadata.json', 'w') as f:
+    json.dump(rf_metadata, f, indent=4)

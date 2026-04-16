@@ -1,9 +1,14 @@
 {
-    "model_name": "KNN Optimis\u00e9",
+    "model_name": "KNN Optimise",
     "k_neighbors": 19,
-    "pca_components": 28,
+    "pca_components": 43,
     "target_mapping": {
         "Non-TruePositive": 0,
         "TruePositive": 1
+    },
+    "training_metrics": {
+        "precision": 0.7896850326944855,
+        "recall": 0.762082108148493,
+        "f1_macro": 0.7719323695554743
     }
 }
