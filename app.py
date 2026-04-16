@@ -52,10 +52,24 @@ COLONNES = [
     'SuspicionLevel', 'LastVerdict', 'CountryCode', 'Month', 'IsWeekend', 'IsBusinessHour'
 ]
 
-uploaded_file = st.file_uploader("Charger un fichier CSV (ex: test_upload.csv)", type="csv")
+uploaded_file = st.file_uploader("Charger un fichier CSV", type="csv")
 
+# Chargement automatique d'un échantillon
+if st.button("Utiliser un échantillon aléatoire (2000 lignes)"):
+    try:
+        df_full = pd.read_csv("test_user_interface.csv")
+        st.session_state['df_test'] = df_full.sample(n=min(2000, len(df_full)), random_state=2026)
+    except Exception as e:
+        st.error(f"Erreur lors du chargement de test_user_interface.csv : {e}")
+
+# Priorité au fichier uploadé, sinon on utilise l'échantillon en session
+df = None
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
+elif 'df_test' in st.session_state:
+    df = st.session_state['df_test']
+
+if df is not None:
     
     # Extraction du temps si absent
     if 'Timestamp' in df.columns:
