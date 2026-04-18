@@ -1,22 +1,22 @@
 # Projet de session — Forage des données (GUIDE)
 
-## � Contexte
+## Contexte
 Les SOC (Security Operations Centers) font face à une explosion du volume d’alertes. Cette surcharge complique le triage rapide et fiable des incidents. Le dataset **GUIDE** de Microsoft fournit une base réaliste et massive d’incidents afin de construire des modèles capables d’assister les analystes dans la priorisation.
 
-## ❓ Problématique
+## Problématique
 Comment automatiser la **classification des incidents de sécurité** (TP vs Non‑TP) à grande échelle, tout en conservant des performances robustes malgré :
 - un **volume massif** de données,
 - des **variables hétérogènes** et à forte cardinalité,
 - un **risque de surapprentissage** ?
 
-## �🎯 Objectif
+## Objectif
 Ce projet vise à classifier les incidents de cybersécurité issus du dataset **GUIDE (Microsoft Security Incident Prediction)** en deux classes :
 - `TruePositive` (TP)
 - `Non-TruePositive` (0 = Benign/False)
 
 Il s’appuie sur un pipeline de prétraitement complet (notebook) et un script d’entraînement centralisé (`Modeles.py`) qui exporte les modèles prêts pour l’application Streamlit.
 
-## 🧭 Contenu du notebook (`notebook.ipynb`)
+## Contenu du notebook (`notebook.ipynb`)
 Le notebook contient tout le **prétraitement** et la **préparation des données** :
 
 1. **Chargement & échantillonnage stratifié**
@@ -41,7 +41,7 @@ Le notebook contient tout le **prétraitement** et la **préparation des donnée
 
 Ces fichiers sont ensuite utilisés directement par `Modeles.py`.
 
-## 🧠 Entraînement des modèles (`Modeles.py`)
+## Entraînement des modèles (`Modeles.py`)
 Le script centralise tout l’entraînement + évaluation + export des modèles :
 
 ### Modèles entraînés
@@ -68,7 +68,7 @@ Le script crée le dossier `models/` avec :
 
 Ces fichiers sont directement consommés par `app.py`.
 
-## 🖥️ Application Streamlit (`app.py`)
+## Application Streamlit (`app.py`)
 L’interface Streamlit charge **uniquement** les fichiers exportés dans `models/`.
 Elle ne ré-exécute pas `Modeles.py`.
 
@@ -77,9 +77,9 @@ Fonctionnalités principales :
 - Analyse manuelle via formulaire (valeurs préremplies)
 - Visualisations : KPI, distributions, ROC / PR
 
-✅ **Note** : une vidéo de démonstration sera faite plus tard (par l’utilisateur).
+**Note** : une vidéo de démonstration sera faite plus tard (par l’utilisateur).
 
-## 📂 Structure des fichiers importants
+## Structure des fichiers importants
 - `notebook.ipynb` → prétraitement & exports
 - `Modeles.py` → entraînement + export des modèles
 - `models/` → modèles et metadata utilisés par l’app
@@ -87,7 +87,7 @@ Fonctionnalités principales :
 - `donnees_transformees.npz` → dataset transformé (train/test)
 - `preprocessor.joblib` → pipeline de transformation
 
-## ✅ Comment utiliser le pipeline
+## Comment utiliser le pipeline
 1. Exécuter `notebook.ipynb` pour générer les données transformées.
 2. Lancer `Modeles.py` pour entraîner et exporter les modèles.
 3. Lancer `app.py` pour utiliser l’interface Streamlit.
