@@ -92,5 +92,3 @@ Fonctionnalités principales :
 2. Lancer `Modeles.py` pour entraîner et exporter les modèles.
 3. Lancer `app.py` pour utiliser l’interface Streamlit.
 
-Si tu veux, je peux ajouter un schéma de flux ou un mini guide d’exécution pas-à-pas.
-
