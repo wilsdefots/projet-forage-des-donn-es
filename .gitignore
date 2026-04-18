@@ -1,0 +1,8 @@
+# Données volumineuses
+archive/
+
+# Fichiers système et caches
+.DS_Store
+__pycache__/
+*.pyc
+~$*
