@@ -1,5 +1,7 @@
 # Projet de session — Forage des données (GUIDE)
 
+## Membres de l'équipe : Oscar Neveux | Wilson Fotsing | Guy Junior Calvet | Jean-Christophe Barriault
+
 ## Contexte
 Les SOC (Security Operations Centers) font face à une explosion du volume d'alertes. Cette surcharge complique le triage rapide et fiable des incidents. Le dataset **GUIDE** de Microsoft fournit une base réaliste et massive d'incidents afin de construire des modèles capables d'assister les analystes dans la priorisation.
 
